@@ -1,0 +1,48 @@
+parameters:
+  rootFolder: ''
+
+steps:
+- checkout: self
+  clean: true
+  persistCredentials: true
+
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: '${{parameters.rootFolder}}'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.SourceBranchName)_$(Build.BuildId).zip
+    replaceExistingArchive: true
+
+#SET APP Tag
+- script: | 
+    echo "TagName: $(Build.SourceBranchName)_$(Build.BuildId)" 
+    git tag $(Build.SourceBranchName)_$(Build.BuildId)
+    git push origin $(Build.SourceBranchName)_$(Build.BuildId)
+  displayName: Updating app tag
+
+#SET development
+- script: | 
+    git push -d origin development || true
+    git tag -d development || true
+    git tag development
+    git push origin development
+  displayName: Updating development tag
+  condition: and(succeeded(),ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+- script: |
+    git push --delete origin to-quality-assurance || true
+    git tag --delete to-quality-assurance || true
+    git tag to-quality-assurance 
+    git push origin to-quality-assurance 
+
+  displayName: Removing remote qa tags and updating newest
+  condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+#SAVE ARTIFACT
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.SourceBranchName)_$(Build.BuildId).zip'
+    ArtifactName: '$(Build.SourceBranchName)_$(Build.BuildId)'
+    publishLocation: 'Container'

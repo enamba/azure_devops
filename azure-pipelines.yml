@@ -1,0 +1,25 @@
+trigger:
+- master
+
+variables:
+- name: app_target
+  value:  'poc-claranet'
+- group: gitflow-example
+
+
+resources:
+  repositories:
+    - repository: ci_yml_reference
+      type: git
+      ref: refs/heads/master
+      name: IT.ALM.Guidance/ci_yml_reference
+
+jobs:
+- job: print
+  steps:
+  - script: echo '$(webAppName)'
+- template: arch_node-01.example.yml@ci_yml_reference
+  parameters:
+    app_target: $(app_target)
+    build_node: true
+

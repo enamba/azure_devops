@@ -1,0 +1,146 @@
+parameters:
+  azureSubscription: ''
+  rootFolder: ''
+  version: ''
+  environment: ''
+  webAppName: ''
+  teamProjectID: ''
+  pipelineID: ''
+
+steps:
+- checkout: self
+  clean: true
+  persistCredentials: true
+
+#GET BRANCH NAME
+- powershell: |
+    $targetTag='$(Build.SourceBranch)' | %{$_.Split('/')[2]; }
+    Write-Host "##vso[task.setvariable variable=targetTag]$targetTag"
+  displayName: 'GET BRANCH NAME'
+
+#GET VAR DEVELOPMENT branch
+- powershell: |
+    $SourceBranchName=((git show-ref --tags -d) -match $((git show-ref --tags -d) -match '$(targetTag)' |  %{$_.Split(" ")[0];})) -NotMatch '$(targetTag)' | %{$_.Split("/")[2];} | %{$_.Split("_")[0];}
+    Write-Host "SourceBranchName: " $SourceBranchName
+    Write-Host "##vso[task.setvariable variable=development.SourceBranchName]$SourceBranchName"
+    $BuildId=((git show-ref --tags -d) -match $((git show-ref --tags -d) -match '$(targetTag)' |  %{$_.Split(" ")[0];})) -NotMatch '$(targetTag)' | %{$_.Split("/")[2];} | %{$_.Split("_")[1];}
+    Write-Host "BuildId: " $BuildId
+    Write-Host "##vso[task.setvariable variable=development.BuildId]$BuildId"
+  displayName: 'GET VAR DEVELOPMENT branch'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/development'))
+
+# - script: |
+#     tagname=$(git show-ref --tags -d |grep  { | grep $(git show-ref --tags -d |grep  { | grep $(targetTag) | awk '{print $1}') | grep -v $(targetTag) | sed 's/[\/|\^|_]/ /g' | awk '{print $4}')
+#     echo "##vso[task.setvariable variable=SourceBranchName]$SourceBranchName"
+#     BuildId=$(git show-ref --tags -d |grep  { | grep $(git show-ref --tags -d |grep  { | grep $(targetTag) | awk '{print $1}') | grep -v $(targetTag) | sed 's/[\/|\^|_]/ /g' | awk '{print $5}')
+#     echo "##vso[task.setvariable variable=BuildId]$BuildId"
+#     tagname=$(git show-ref --tags -d |grep  { | grep $(git show-ref --tags -d |grep  { | grep $(targetTag) | awk '{print $1}') | grep -v $(targetTag) | sed 's/[\/|\^|_]/ /g' | awk '{print $4}')
+#     tagname=$(git show-ref --tags -d |grep  { | grep $(git show-ref --tags -d |grep  { | grep $(targetTag) | awk '{print $1}') | grep -v $(targetTag) | sed 's/[\/|\^]/ /g' | awk '{print $4}')
+#     echo "##vso[task.setvariable variable=tagname]$tagname"
+#   displayName: listing more tags DEV
+#   name: tagReference_dev
+#   workingDirectory: ${{parameters.rootFolder}}
+#   condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/development'))
+
+- powershell: |
+    Write-Host 'pipelineID: ${{parameters.pipelineID}}'
+    Write-Host 'teamProjectID: ${{parameters.teamProjectID}}'
+    Write-Host 'ArtifactsDirectory: $(System.ArtifactsDirectory)'    
+
+#DOWNLOAD from DEVELOPMENT tag
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'specific'
+    buildVersionToDownload: 'specific'
+    project: '${{parameters.teamProjectID}}'
+    pipeline: '${{parameters.pipelineID}}'
+    buildId: '$(development.BuildId)'
+    artifactName: '$(development.SourceBranchName)_$(development.BuildId)'
+    downloadType: 'single'
+    downloadPath: '$(System.ArtifactsDirectory)'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/development'))
+
+
+#UPDATE CONFIG from DEVELOPMENT tag
+# - task: FileTransform@1
+#   condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/development'))
+#   inputs:
+#     folderPath: '$(Pipeline.Workspace)/$(development..SourceBranchName)_$(development..BuildId).zip'
+#     fileType: json
+#     targetFiles: 'config/app.json'
+
+#DEPLOY development
+- powershell: Write-Host 'Deploy app on DEVELOPMENT Environment'
+  displayName: 'Deploy Azure Web App : dev-app-gitflow'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/development'))
+
+
+#GET VAR MASTER branch
+- powershell: |
+    $SourceBranchName=(((git show-ref --tags -d) -match $((git show-ref --tags -d) -match '$(targetTag)' |  %{$_.Split(" ")[0];})) -NotMatch '$(targetTag)') -match 'master_' | %{$_.Split("/")[2];} | %{$_.Split("_")[0];}
+    Write-Host "SourceBranchName: " $SourceBranchName
+    Write-Host "##vso[task.setvariable variable=master.SourceBranchName]$SourceBranchName"
+    $BuildId=(((git show-ref --tags -d) -match $((git show-ref --tags -d) -match '$(targetTag)' |  %{$_.Split(" ")[0];})) -NotMatch '$(targetTag)') -match 'master_'  | %{$_.Split("/")[2];} | %{$_.Split("_")[1];}
+    Write-Host "BuildId: " $BuildId
+    Write-Host "##vso[task.setvariable variable=master.BuildId]$BuildId"
+  displayName: 'GET VAR MASTER branch'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/to-'))
+
+#DOWNLOAD from MASTER branch
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'specific'
+    buildVersionToDownload: 'specific'
+    project: '${{parameters.teamProjectID}}'
+    pipeline: '${{parameters.pipelineID}}'
+    buildId: '$(master.BuildId)'
+    artifactName: '$(master.SourceBranchName)_$(master.BuildId)'
+    downloadType: 'single'
+    downloadPath: '$(System.ArtifactsDirectory)'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/to-'))
+
+#UPDATE CONFIG from MASTER branch
+# - task: FileTransform@1
+#   condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/to-'))
+#   inputs:
+#     folderPath: '$(Pipeline.Workspace)/$(tagReference.SourceBranchName)_$(tagReference.BuildId).zip'
+#     fileType: json
+#     targetFiles: 'config/app.json'
+
+#DEPLOY quality-assurance
+- powershell: Write-Host 'Deploy app on QA Environment'
+  displayName: 'Deploy Azure Web App : qa-app-gitflow'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/to-quality-assurance'))
+
+#DEPLOY production
+- powershell: Write-Host 'Deploy app on PRD Environment'
+  displayName: 'Deploy Azure Web App : app-gitflow'
+  condition: and(succeeded(),startsWith(variables['Build.SourceBranch'], 'refs/tags/to-production'))
+
+#SET TAG quality-assurance
+- script: | 
+    git push --delete origin quality-assurance || true
+    git tag --delete quality-assurance || true
+    git tag quality-assurance
+    git push origin quality-assurance
+  displayName: Updating quality-assurance tag
+  condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/tags/to-quality-assurance'))
+
+#SET TAG to-production
+- script: | 
+    git push --delete origin to-production || true
+    git tag --delete to-production || true
+    git tag to-production
+    git push origin to-production
+  displayName: Updating to-production tag
+  condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/tags/to-quality-assurance'))
+
+#SET TAG production
+- script: | 
+    git push --delete origin production || true
+    git tag --delete production || true
+    git tag production
+    git push origin production
+  displayName: Updating production tag
+  condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/tags/to-production'))
+
