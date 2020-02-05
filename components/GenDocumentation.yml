@@ -1,0 +1,13 @@
+parameters:
+    continueOnError: false
+    
+steps:
+- task: docwithdoxygen@0
+  displayName: 'Generate Documentation'
+  inputs:
+    ProjectName: '$(System.TeamProject)'
+    ProjectVersion: '$(Build.BuildNumber)'
+    SourceFilePattern: '*.cs *.ts *.js *.c *.java *.cpp *.md'
+    UseCustomDoxyFile: false
+  continueOnError: ${{ parameters.continueOnError }}
+  enabled: true

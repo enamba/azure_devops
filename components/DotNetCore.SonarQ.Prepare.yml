@@ -1,0 +1,41 @@
+parameters:
+  ServerConnection: 'SonarQubeServer'
+
+steps:
+- task: sonarQubeAutoInit@1
+  inputs:
+    sonar_qube_base_uri:  $(SonarQubeBaseUri)
+    sonar_qube_token:     $(SonarQubeUserToken)
+    build_definitionName: $(Build.DefinitionName)
+  displayName: 'SonarQube Project Auto-Init'
+  enabled: true
+
+- powershell: |
+   $paths = Get-ChildItem -include *.csproj -Recurse
+   foreach($pathobject in $paths) 
+   {
+       $path = $pathobject.fullname
+       $doc = New-Object System.Xml.XmlDocument
+       $doc.Load($path)
+       $child = $doc.CreateElement("ProjectGuid")
+       $child.InnerText = [guid]::NewGuid().ToString().ToUpper()
+       $node = $doc.SelectSingleNode("//Project/PropertyGroup")
+       $node.AppendChild($child)
+       $doc.Save($path)
+   }
+  enabled: true
+  displayName: 'SonarQube Gen-Guid'
+
+- task: SonarQubePrepareCommunityCommunity@4
+  displayName: 'SonarQube Prepare Analysis'
+  inputs:
+    SonarQube:       ${{ parameters.ServerConnection }}
+    projectKey:      '$(Build.DefinitionName)'
+    projectName:     '$(Build.DefinitionName)'
+    extraProperties: |
+      # Additional properties that will be passed to the scanner, 
+      # Put one key=value per line, example:
+      sonar.coverageReportPaths=$(Build.SourcesDirectory)\Build\TestReports\Coverage\SonarQube.xml
+      sonar.dependencyCheck.reportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.xml
+      sonar.dependencyCheck.htmlReportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.html
+  enabled: true

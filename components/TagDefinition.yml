@@ -1,0 +1,42 @@
+# Tag manipulations
+parameters:
+  name:  'anonymous'
+  email: 'noreplay@nobody.com'
+
+steps:
+- checkout: self
+  clean: true
+  persistCredentials: true
+
+#GET VAR DEVELOPMENT branch
+- powershell: |
+      $increment=((git show-ref)  -match $((git show-ref) -match 'master' |  %{$_.Split(" ")[0];})) -match 'sprint' | %{$_.Split("\\.")[1];}
+      Write-Host "increment: $increment"
+      $latestVersion=((git show-ref )-match ((git show-ref  ) -match 'latest' | %{$_.Split(" ")[0];}) ) -match 'refs/tags/v.' | %{$_.Split("\\.")[1..3];}
+      if ($increment -eq 'major') {
+        $newVersion = ([int]$latestVersion[0]+1),0,0
+      }
+      if ($increment -eq 'minor') {
+        $newVersion = $latestVersion[0],([int]$latestVersion[1]+1),0
+      }
+      if ($increment -eq 'patch') {
+        $newVersion = $latestVersion[0],$latestVersion[1],([int]$latestVersion[2]+1)
+      }
+      $nextVersionName = "v.{0}" -f  ($newVersion -join ".")
+      Write-Host "newVersion: $nextVersionName"
+      Write-Host "##vso[task.setvariable variable=nextVersion]$nextVersionName"
+      $date=$(Get-Date -Format g);
+      Write-Host "##vso[task.setvariable variable=time]$date"
+  displayName: 'GET NEW Version'
+  enabled: true
+
+# Tags the current branch with a specified tag and pushes it to origin
+- task: GitTag@1
+  displayName: 'Git Tagging'
+  inputs:
+    workingdir: '$(Build.SourcesDirectory)'
+    tagUser: '$(name)'
+    tagEmail: '$(email)'
+    tag: '$(nextVersion)_$(Build.buildNumber)'
+    tagMessage: '$(time)'
+  enabled: true

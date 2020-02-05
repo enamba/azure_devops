@@ -1,0 +1,39 @@
+parameters:
+    runVersion:       'Community'
+    ServerConnection: 'SonarQubeServer'
+    BuildType:        'Node' 
+
+steps:
+# Only run for Node Projects
+- ${{ if eq(parameters.BuildType, 'Node') }}:
+  - powershell: 'sonar-scanner -X'
+    displayName: 'SonarQube Run Analysis'
+    enabled: true
+
+# Only run for DotNet Framework or DotNet Core Projects
+- ${{ if ne(parameters.BuildType, 'Node') }}:
+  - ${{ if ne(parameters.runVersion, 'Community') }}:
+    - task: SonarQubeAnalyze@4
+      displayName: 'SonarQube Run Analysis'
+      enabled: true
+  - ${{ if eq(parameters.runVersion, 'Community') }}:
+    - task: SonarQubeAnalyzeCommunity@4
+      displayName: 'SonarQube Run Analysis'
+      enabled: true
+
+- ${{ if ne(parameters.runVersion, 'Community') }}:
+  - task: SonarQubePublish@4
+    displayName: 'SonarQube Publish Quality Gate Results'
+    enabled: true
+
+- ${{ if eq(parameters.runVersion, 'Community') }}:
+  - task: SonarQubePublishCommunity@4
+    displayName: 'SonarQube Publish Quality Gate Results'
+    enabled: true
+
+- task: sonar-buildbreaker@8
+  displayName: 'SonarQube Break Build on Quality Gate Failure'
+  inputs:
+    SonarQube: ${{ parameters.ServerConnection }}
+  continueOnError: true
+  enabled: true

@@ -1,0 +1,24 @@
+
+parameters:
+  name: 'anonymous'
+  email: 'noreplay@nobody.com'
+  body: 'body'
+  subject: 'Azure Devops Action not defined'
+  smtpuser: ''
+  smtppass: ''
+  smtphost: ''
+  smtpport: ''
+
+steps:
+- task: DutchWorkzToolsSendEmail@1
+  inputs:
+    recipients: '${{ parameters.email }}'
+    fromaddress: 'noreplay@mail.com'
+    subject: '${{ parameters.subject }}'
+    bodytext: '${{ parameters.body }}'
+    smtphost: '${{ parameters.smtphost }}'
+    smtpport: '${{ parameters.smtpport }}'
+    smtpuser: '${{ parameters.smtpuser }}'
+    smtppass: '${{ parameters.smtppass }}'
+    smtpssl: true
+  condition: always()

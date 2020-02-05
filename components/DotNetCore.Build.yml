@@ -1,0 +1,28 @@
+# DotNet Build tasks
+parameters:
+    nugetConfigPath: '$(Build.SourcesDirectory)/nuget.config'
+    zipAfterPublish: false
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'DotNet Clean'
+  inputs:
+    command: custom
+    custom:  clean
+  enabled: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'DotNet Restore'
+  inputs:
+    command:          restore
+    feedsToUse:       config
+    nugetConfigPath:  ${{ parameters.nugetConfigPath }}
+#    restoreDirectory: '$(Build.SourcesDirectory)/lib/packages'
+    noCache:          true
+  enabled: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'DotNet Build'
+  inputs:
+    arguments: '--configuration $(Build.Configuration) --configfile ${{ parameters.nugetConfigPath }}'
+  enabled: true

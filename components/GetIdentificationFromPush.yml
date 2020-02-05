@@ -1,0 +1,12 @@
+# Get Name and email from the last Push
+steps:
+- powershell: |
+      $email=(git log HEAD^..HEAD --pretty=format:"%ce")
+      Write-Host "##vso[task.setvariable variable=email;isOutput=true]$email"
+      Write-Host "Email: $email"
+      $name=(git log HEAD^..HEAD --pretty=format:"%an")
+      Write-Host "##vso[task.setvariable variable=name;isOutput=true]$name"
+      Write-Host "Name:  $name"
+  displayName: 'Get Name & Email from last push'
+  name: whoPushed
+  enabled: true

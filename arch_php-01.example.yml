@@ -1,0 +1,41 @@
+parameters:
+  pool: ''
+  DockerfileName: ''
+  containerRegistry: []
+  ContainerName: ''
+  GroupVariablesName: ''
+  ConfigFiles: []
+
+jobs:
+
+- job: buildAndPushDocker
+  displayName: 'Build and Push Docker'
+  variables:
+  - group: ${{ parameters.GroupVariablesName }}
+  pool: 
+    name: ${{ parameters.pool }}
+  continueOnError: false
+  steps:
+  - template: components/GetIdentificationFromPush.yml
+  - script: echo '$(whoPushed.name)'
+  - script: echo '$(whoPushed.email)'
+  - template: components/TagDefinition.yml
+    parameters:
+      name: '$(whoPushed.name)'
+      email: '$(whoPushed.email)'
+  - template: components/ConfigFileReplace.yml
+    parameters:
+      ConfigFiles: ${{ parameters.ConfigFiles }}
+  - template: components/build_php_01.example.yml
+  - template: components/Docker.BuildAndPublish.yml
+    parameters:
+      DockerfileName: ${{ parameters.DockerfileName }}
+      containerRegistry: ${{ parameters.containerRegistry }}
+      ContainerName: ${{ parameters.ContainerName }}
+  - template: components/SendEmail.yml
+    parameters:
+      name: '$(whoPushed.name)'
+      email: '$(whoPushed.email)'
+      body: 'Builded and Pushed container: ${{ parameters.ContainerName }}'
+      subject: 'Docker build and push - Success'
+

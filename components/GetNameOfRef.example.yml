@@ -1,0 +1,6 @@
+jobs:
+- job: buildAndPushDocker
+  steps:
+    - powershell: | 
+        $branchOrTagName = '$(Build.SourceBranch)' |  %{$_.Split("/")[2];}
+        Write-Host "##vso[task.setvariable variable=branchOrTagName]$branchOrTagName"

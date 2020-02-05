@@ -1,0 +1,21 @@
+parameters:
+    encryptArtifacts:  false
+    source:            ''
+    destination:       ''
+    
+steps:
+- task: ExtractFilesWithEncryption@1
+  condition: eq(parameters.encryptArtifacts, true)
+  displayName: 'UnCompress Artifacts with Encryption'
+  inputs:
+    Source:     ${{ parameters.source }}
+    Dest:       ${{ parameters.destination }}
+    Encryption: '$(Encryption.Password)'
+  
+- task: ExtractFiles@1
+  condition: eq(parameters.encryptArtifacts, false)
+  displayName: 'UnCompress Artifacts no Encryption'
+  inputs:
+    archiveFilePatterns:    ${{ parameters.source }}
+    destinationFolder:      ${{ parameters.destination }}
+    cleanDestinationFolder: true

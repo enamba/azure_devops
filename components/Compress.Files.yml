@@ -1,0 +1,25 @@
+parameters:
+    EncryptArtifacts:  false
+    Source:            ''
+    Destination:       ''
+    
+steps:
+- ${{ if eq(parameters.EncryptArtifacts, 'true') }}:
+  - task: ArchiveFilesWithEncryption@2
+    displayName: 'Compress Artifacts with Encryption'
+    inputs:
+      Source:     ${{ parameters.Source }}
+      Dest:       ${{ parameters.Destination }}
+      Encryption: '$(Encryption.Password)'
+    enabled: true
+  
+- ${{ if eq(parameters.EncryptArtifacts, 'false') }}:
+  - task: ArchiveFiles@2
+    displayName: 'Compress Artifacts no Encryption'
+    inputs:
+      rootFolderOrFile:       ${{ parameters.Source }}
+      includeRootFolder:      true
+      archiveType:            'zip'
+      archiveFile:            ${{ parameters.Destination }}
+      replaceExistingArchive: true
+    enabled: true

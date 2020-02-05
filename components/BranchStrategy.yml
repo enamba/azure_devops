@@ -1,0 +1,16 @@
+# Branch Strategy
+parameters:
+    Dummy: false
+
+steps:
+# Getting the ID of the last push in Git
+  - template: GetIdentificationFromPush.yml
+  - script: echo '$(whoPushed.name)'
+  - script: echo '$(whoPushed.email)'
+
+# Tag Manipulations
+  - template: TagDefinition.yml
+    parameters:
+      name:  '$(whoPushed.name)'
+      email: '$(whoPushed.email)'
+

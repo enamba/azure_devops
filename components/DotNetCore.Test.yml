@@ -1,0 +1,36 @@
+parameters:
+    testProjects: '*[Tt]est/**/*[Tt]est*/*.csproj'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'DotNet Test'
+  inputs:
+    command: test
+    projects:     ${{ parameters.testProjects }}
+    arguments:    '--configuration $(Build.Configuration) -property:CollectCoverage=true;CoverletOutputFormat=cobertura;CoverletOutput=Coverage/'
+    testRunTitle: '$(Build.DefinitionName) - Build #: $(Build.BuildNumber)'
+  enabled: true
+
+- task: reportgenerator@4
+  displayName: 'Report Generator'
+  inputs:
+    reports:     '$(Build.SourcesDirectory)/unitTests/Bcp.Channels.PreApprovedLoans.UnitTests/**/coverage.cobertura.xml'
+    targetdir:   '$(Build.SourcesDirectory)/Build/TestReports/Coverage'
+    reporttypes: 'Cobertura;SonarQube'
+    tag: '$(Build.DefinitionName) - Build: $(Build.BuildNumber)'
+  enabled: true
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish Code Coverage Results'
+  inputs:
+    codeCoverageTool:    Cobertura
+    summaryFileLocation: '$(Build.SourcesDirectory)/Build/TestReports/Coverage/Cobertura.xml'
+    failIfCoverageEmpty: true
+  enabled: true
+
+- task: codecoveragecomparerbt@1
+  displayName: 'Compare Code Coverage Results'
+  inputs:
+    codecoveragetarget: '85'
+    codecoveragemeasurementmethod: 'Lines'
+  enabled: true

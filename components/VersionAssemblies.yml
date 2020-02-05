@@ -1,0 +1,17 @@
+# Applies a version to various formats of manifest files based on the build number.
+parameters:
+    BuildType: 'DotNet'
+
+steps:
+- ${{ if eq(parameters.BuildType, 'DotNet') }}:
+  - task: VersionDotNetCoreAssemblies@2
+    displayName: 'Version DotNet Core Assemblies'
+    inputs:
+      Path: '$(Build.SourcesDirectory)'
+      VersionNumber: '$(Build.BuildNumber)'
+      VersionRegex: '\d+\.\d+\.\d+'
+      Injectversion: false
+      FilenamePattern: '.csproj'
+      AddDefault: true
+      OutputVersion: 'OutputedVersion'
+    enabled: true

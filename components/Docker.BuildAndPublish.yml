@@ -1,0 +1,31 @@
+parameters:
+    DockerfileName:    ''
+    ContainerRegistry: []
+    ContainerName:     ''
+    arguments:         ''
+
+steps:
+- task: Docker@2
+  displayName: 'Docker Build: ${{ parameters.DockerfileName }}'
+  inputs:
+    containerRegistry: ${{ parameters.ContainerRegistry[0] }}
+    repository:        ${{ parameters.ContainerName }}
+    command:           build
+    Dockerfile:        ${{ parameters.DockerfileName }}
+    buildContext:      ''
+    tags:              '$(Build.BuildNumber)'
+    ${{ if ne(parameters.arguments, '') }}:
+      arguments: '${{ parameters.arguments }}'
+  enabled: true
+
+- ${{ each acr in parameters.ContainerRegistry }}:
+  - task: Docker@2
+    displayName: 'Docker Push to ${{ acr }}'
+    inputs:
+      containerRegistry: ${{ acr }}
+      repository:        ${{ parameters.ContainerName }}
+      command:           push
+      tags:              '$(Build.BuildNumber)'
+    enabled: true
+
+

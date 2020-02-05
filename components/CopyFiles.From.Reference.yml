@@ -1,0 +1,22 @@
+parameters:
+    FilenamesReference: [] #use with prefix Dockerfile\ or Kubernetes\
+
+steps:
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      git clone --single-branch --branch yml_reference https://github.com/enamba/azure_devops.git
+  displayName: 'Getting Files from Reference Repo'
+  enabled: true
+
+- ${{ each filename in parameters.FilenamesReference }}:
+  - task: PowerShell@2
+    inputs:
+      targetType: inline
+      script: |
+        copy .\ci_yml_reference\References\${{ filename }} .
+        Write-Host "Files Copied: ${{ filename }}"
+    displayName: 'Copying file from reference repo to local project'
+    enabled: true
+

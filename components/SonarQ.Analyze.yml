@@ -1,0 +1,18 @@
+parameters:
+  ServerConnection: 'SonarQubeServer'
+
+steps:
+- task: SonarQubeAnalyzeCommunity@4
+  displayName: 'SonarQube Run Analysis'
+  enabled: true
+
+- task: SonarQubePublishCommunity@4
+  displayName: 'SonarQube Publish Quality Gate Results'
+  enabled: true
+
+- task: sonar-buildbreaker@8
+  displayName: 'SonarQube Break Build on Quality Gate Failure'
+  inputs:
+    SonarQube: ${{ parameters.ServerConnection }}
+  continueOnError: true
+  enabled: true

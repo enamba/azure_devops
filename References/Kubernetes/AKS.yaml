@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: azure-#{Container-Service-Name}#-deployment
+spec:
+  replicas: #{NPOD}#
+  template:
+    metadata:
+      labels:
+        app: #{Container-Service-Name}#
+    spec:
+      containers:
+        - name: #{Container-Service-Name}#
+          image: #{ACR-LoginServerName}#/#{Container-Image-Name}#:#{Build.BuildNumber}#
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            limits:
+              cpu: #{CPULIM}#m
+              memory: #{MEMLIM}#Mi          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #{Container-Service-Name}#-service
+  labels:
+    run: #{Container-Service-Name}#
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: #{Container-Service-Name}#

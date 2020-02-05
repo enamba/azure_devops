@@ -1,0 +1,16 @@
+parameters:
+  pool: ''
+  GroupVariablesName: ''
+
+jobs:
+
+- job: buildAndPushDocker
+  displayName: 'Build and Push Docker'
+  variables:
+  - group: ${{ parameters.GroupVariablesName }}
+  pool: 
+    name: ${{ parameters.pool }}
+  steps:
+  - script: |
+     echo webAppName '$(webAppName)'
+     echo defaultVar '$(defaultVar)'

@@ -1,0 +1,10 @@
+# Sonar Qube Steps
+
+steps:
+- powershell: 'npm install -g sonarqube-scanner'
+  displayName: 'SonarQube Scanner'
+
+
+- powershell: 'sonar-scanner -X'
+  displayName: Sonar
+  condition: and(succeeded(), eq(variables['build.sourcebranchname'], 'release'))

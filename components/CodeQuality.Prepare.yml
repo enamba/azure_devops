@@ -1,0 +1,64 @@
+parameters:
+    runVersion:       'Community'
+    ServerConnection: 'SonarQubeServer'
+    BuildType:        'DotNet' 
+
+steps:
+- task: sonarQubeAutoInit@1
+  inputs:
+    sonar_qube_base_uri:  $(SonarQubeBaseUri)
+    sonar_qube_token:     $(SonarQubeUserToken)
+    build_definitionName: $(Build.DefinitionName)
+  displayName: 'SonarQube Project Auto-Init'
+  enabled: true
+
+# Only run for Node Projects
+- ${{ if eq(parameters.BuildType, 'Node') }}:
+  - powershell: 'npm install -g sonarqube-scanner'
+    displayName: 'SonarQube Scanner Install'
+    enabled: true
+
+# Only run for DotNet Framework or DotNet Core Projects
+- ${{ if eq(parameters.BuildType, 'DotNet') }}:
+  - task: sonarQubeGenerateGuid@1
+    displayName: 'SonarQube Generate Guid'
+    inputs:
+      path_file_csproj: '$(Build.SourcesDirectory)'
+    enabled: true
+
+# Prepare SonarQube Analysis with Enterprise version
+- ${{ if ne(parameters.runVersion, 'Community') }}:
+  - task: SonarQubePrepare@4
+    displayName: 'SonarQube Prepare Analysis'
+    inputs:
+      SonarQube:      ${{ parameters.ServerConnection }}
+      projectKey:     '$(Build.DefinitionName)'
+      projectName:    '$(Build.DefinitionName)'
+      projectVersion: '$(Build.BuildNumber)'
+      extraProperties: |
+       # Additional properties that will be passed to the scanner, 
+       # Put one key=value per line
+       sonar.coverageReportPaths=$(Build.SourcesDirectory)\Build\TestReports\Coverage\SonarQube.xml
+       sonar.dependencyCheck.reportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.xml
+       sonar.dependencyCheck.htmlReportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.html
+    enabled: true
+
+
+
+# Prepare SonarQube Analysis with Community version
+- ${{ if eq(parameters.runVersion, 'Community') }}:
+  - task: SonarQubePrepareCommunityCommunity@4
+    displayName: 'SonarQube Prepare Analysis'
+    inputs:
+      SonarQube:      ${{ parameters.ServerConnection }}
+      projectKey:     '$(Build.DefinitionName)'
+      projectName:    '$(Build.DefinitionName)'
+      projectVersion: '$(Build.BuildNumber)'
+      extraProperties: |
+       # Additional properties that will be passed to the scanner, 
+       # Put one key=value per line
+       sonar.coverageReportPaths=$(Build.SourcesDirectory)\Build\TestReports\Coverage\SonarQube.xml
+       sonar.dependencyCheck.reportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.xml
+       sonar.dependencyCheck.htmlReportPath=$(Agent.BuildDirectory)\TestResults\dependency-check\dependency-check-report.html
+    enabled: true
+

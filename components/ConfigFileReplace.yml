@@ -1,0 +1,10 @@
+parameters:
+    ConfigFiles: []
+
+steps:
+- ${{ each configFile in parameters.ConfigFiles }}:
+  - task: FileTransform@1
+    inputs:
+      folderPath: '$(System.DefaultWorkingDirectory)'
+      fileType: 'json'
+      targetFiles: '${{configFile}}'

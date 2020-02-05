@@ -1,0 +1,14 @@
+parameters:
+  nugetConfigPath: '$(Build.SourcesDirectory)/nuget.config'
+  zipAfterPublish: false
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'DotNet Publish'
+  inputs:
+    command:            publish
+    publishWebProjects: false
+    arguments:          '--configuration $(Build.Configuration) --configfile ${{ parameters.nugetConfigPath }} --output $(Build.SourcesDirectory)/publish'
+    zipAfterPublish:    ${{ parameters.zipAfterPublish }}
+    modifyOutputPath:   false
+  enabled: true

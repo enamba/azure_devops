@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-#{Container-Service-Name}#-#{Release.EnvironmentName}#
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+spec:
+  rules:
+  - host: #{Container-Service-Name}#.#{Release.EnvironmentName}#.#{System.TeamProject}#.#{DNS.Suffix}#
+    http:
+      paths:
+      - backend:
+          serviceName: #{Container-Service-Name}#-service
+          servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-#{Container-Service-Name}#-#{Release.EnvironmentName}#-tls
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+spec:
+  tls:
+    - hosts:
+      - #{Container-Service-Name}#.#{Release.EnvironmentName}#.#{System.TeamProject}#.#{DNS.Suffix}#
+      secretName: #{Container-Service-Name}#-cert
+  rules:
+  - host: #{Container-Service-Name}#.#{Release.EnvironmentName}#.#{System.TeamProject}#.#{DNS.Suffix}#
+    http:
+      paths:
+      - backend:
+          serviceName: #{Container-Service-Name}#-service
+          servicePort: 80

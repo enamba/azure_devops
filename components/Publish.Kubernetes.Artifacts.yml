@@ -1,0 +1,67 @@
+parameters:
+    CompressArtifacts: true
+    EncryptArtifacts:  false
+    DockerfileName:    'Dockerfile'
+
+steps:
+# Copy files from DevOps reference repository
+- template: CopyFiles.From.Reference.yml
+  parameters:
+    FilenamesReference: [
+        '/Dockerfile/${{ parameters.DockerfileName }}',
+        'Kubernetes/AKS.yaml',
+        'Kubernetes/ingress-tls.yaml'
+    ]
+
+- task: replacetokens@3
+  displayName: 'Transform Dockerfile: ${{ parameters.DockerfileName }}'
+  inputs:
+    rootDirectory: '$(Build.SourcesDirectory)'
+    targetFiles:   ${{ parameters.DockerfileName }}
+    tokenPrefix:   '$('
+    tokenSuffix:   ')'
+  enabled: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to Publish Directory'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+     ${{ parameters.DockerfileName }}
+     AKS.yaml
+     ingress-tls.yaml
+    TargetFolder: '$(Build.SourcesDirectory)\publish\'
+  enabled: true
+
+- task: DeleteFiles@1
+  displayName: 'Delete Development AppSettings'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\publish\'
+    Contents:     appsettings.json
+  condition: and(succeeded(), ne(variables['build.sourcebranchname'], 'develop'))
+  enabled: true
+
+# Compress Artifacts
+- ${{ if eq(parameters.CompressArtifacts, 'true') }}:
+  - template: 'Compress.Files.yml'
+    parameters:
+      encryptArtifacts: ${{ parameters.EncryptArtifacts }}
+      source:           '$(Build.SourcesDirectory)/publish/'
+      destination:      '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
+  inputs:
+    ArtifactName: '$(Build.BuildNumber)'
+  enabled: true
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from Publish Directory'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\publish\'
+    Contents: |
+     ${{ parameters.DockerfileName }}
+     appsettings*.json
+     CodeCoverage
+     .sqAnalysis
+  enabled: true
