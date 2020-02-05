@@ -23,5 +23,5 @@ jobs:
       echo outsidevar '$(outsidevar)'
 - template: arch_group_variables.example.yml@yml_reference
   parameters:
-    GroupVariablesName: 'variables-example-inside'
+    GroupVariablesName: 'variables-example-$(branchOrTagName)'
 
