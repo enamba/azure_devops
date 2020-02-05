@@ -9,5 +9,5 @@ jobs:
   - group: ${{ parameters.GroupVariablesName }}
   steps:
   - script: |
-     echo webAppName '$(webAppName)'
+     echo outsidevar '$(outsidevar)'
      echo defaultVar '$(defaultVar)'
