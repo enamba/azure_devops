@@ -19,4 +19,4 @@ jobs:
 - template: components/GetNameOfRef.example.yml@yml_reference
 - template: arch_group_variables.example.yml@yml_reference
   parameters:
-    GroupVariablesName: 'variables-example-$(branchOrTagName)'
+    GroupVariablesName: 'variables-example-${{ branchOrTagName }}'
