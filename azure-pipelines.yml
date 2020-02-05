@@ -13,6 +13,7 @@ resources:
       type: github
       ref: refs/heads/yml_reference
       name: enamba/azure_devops
+      endpoint: enamba
 
 jobs:
 - job: print
