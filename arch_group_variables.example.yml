@@ -1,13 +1,10 @@
 parameters:
   GroupVariablesName: ''
 
-jobs:
+variables:
+- group: ${{ parameters.GroupVariablesName }}
 
-- job: print_variable
-  displayName: 'Print Group Variables inside of template'
-  variables:
-  - group: ${{ parameters.GroupVariablesName }}
-  steps:
+steps:
   - script: |
      echo outsidevar '$(outsidevar)'
      echo defaultVar '$(defaultVar)'
