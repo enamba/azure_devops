@@ -19,7 +19,7 @@ jobs:
 - job: print
   steps:
   - script: echo '$(webAppName)'
-- template: arch_node-01.example.yml@ci_yml_reference
+- template: arch_node-01.example.yml@yml_reference
   parameters:
     app_target: $(app_target)
     group-variables: 'variables-example-inside'
