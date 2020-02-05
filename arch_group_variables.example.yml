@@ -1,15 +1,12 @@
 parameters:
-  pool: ''
   GroupVariablesName: ''
 
 jobs:
 
-- job: buildAndPushDocker
-  displayName: 'Build and Push Docker'
+- job: print_variable
+  displayName: 'Print Group Variables inside of template'
   variables:
   - group: ${{ parameters.GroupVariablesName }}
-  pool: 
-    name: ${{ parameters.pool }}
   steps:
   - script: |
      echo webAppName '$(webAppName)'
