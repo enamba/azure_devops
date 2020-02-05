@@ -2,8 +2,8 @@ trigger:
 - master
 
 variables:
-- name: app_target
-  value:  'app-example'
+- name: defaultVar
+  value:  'value define yml on project repo'
 - group: variables-example-outside
 
 
@@ -18,9 +18,8 @@ resources:
 jobs:
 - job: print
   steps:
-  - script: echo '$(webAppName)'
-- template: arch_node-01.example.yml@yml_reference
+  - script: echo '$(defaultVar)'
+- template: arch_group_variables.example.yml@yml_reference
   parameters:
-    app_target: $(app_target)
     group-variables: 'variables-example-inside'
 
