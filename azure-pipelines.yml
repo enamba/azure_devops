@@ -18,7 +18,9 @@ resources:
 jobs:
 - job: print
   steps:
-  - script: echo '$(defaultVar)'
+  - script: |
+      echo defaultVar '$(defaultVar)'
+      echo outsidevar '$(outsidevar)'
 - template: arch_group_variables.example.yml@yml_reference
   parameters:
     GroupVariablesName: 'variables-example-inside'
