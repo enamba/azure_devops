@@ -3,8 +3,10 @@ parameters:
 
 variables:
 - group: ${{ parameters.GroupVariablesName }}
+- group: variables-example-inside
 
 steps:
   - script: |
      echo outsidevar '$(outsidevar)'
      echo defaultVar '$(defaultVar)'
+     echo var by tag '$(variable)'
