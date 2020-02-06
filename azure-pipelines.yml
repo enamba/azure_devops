@@ -24,16 +24,16 @@ resources:
 
 steps:
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/developer') }}: 
-- template: arch_group_variables.example.yml@yml_reference
-  parameters:
-    GroupVariablesName: variables-example-developer
+  - template: arch_group_variables.example.yml@yml_reference
+    parameters:
+      GroupVariablesName: variables-example-developer
 
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/qa') }}: 
-- template: arch_group_variables.example.yml@yml_reference
-  parameters:
-    GroupVariablesName: variables-example-qa
+  - template: arch_group_variables.example.yml@yml_reference
+    parameters:
+      GroupVariablesName: variables-example-qa
 
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/production') }}: 
-- template: arch_group_variables.example.yml@yml_reference
-  parameters:
-    GroupVariablesName: variables-example-production
+  - template: arch_group_variables.example.yml@yml_reference
+    parameters:
+      GroupVariablesName: variables-example-production
