@@ -1,0 +1,5 @@
+jobs:
+- job: build_app
+  displayName: 'Build application'
+  steps:
+    - script: echo BUILDING APP
