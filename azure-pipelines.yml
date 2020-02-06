@@ -1,7 +1,9 @@
 trigger:
   branches:
+    include:
     - master
   tags:
+    include:
     - developer
     - qa
     - production
