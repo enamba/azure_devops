@@ -1,11 +1,7 @@
-parameters:
-  GroupVariablesName: ''
-
 jobs:
 - job: deploy_app
   displayName: 'Deploy application'
   variables:
-  - group: ${{ parameters.GroupVariablesName }}
   - group: variables-example-inside
 
   steps:
