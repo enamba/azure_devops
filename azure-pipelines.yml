@@ -9,6 +9,12 @@ variables:
 - name: defaultVar
   value:  'value define yml on project repo'
 - group: variables-example-outside
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}: 
+  - group: variables-example-developer
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/qa') }}: 
+  - group: variables-example-qa
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/production') }}: 
+  - group: variables-example-production
 
 
 resources:
@@ -20,17 +26,4 @@ resources:
       endpoint: enamba
 
 jobs:
-- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}: 
-  - template: deploy.example.yml@yml_reference
-    parameters:
-      GroupVariablesName: variables-example-developer
-
-- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/qa') }}: 
-  - template: deploy.example.yml@yml_reference
-    parameters:
-      GroupVariablesName: variables-example-qa
-
-- ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/production') }}: 
-  - template: deploy.example.yml@yml_reference
-    parameters:
-      GroupVariablesName: variables-example-production
+- template: deploy.example.yml@yml_reference
