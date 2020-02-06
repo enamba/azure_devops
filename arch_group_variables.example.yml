@@ -1,12 +1,15 @@
 parameters:
   GroupVariablesName: ''
 
-variables:
-- group: ${{ parameters.GroupVariablesName }}
-- group: variables-example-inside
+jobs:
+- job: buildAndPushDocker
+  displayName: 'Build and Push Docker'
+  variables:
+  - group: ${{ parameters.GroupVariablesName }}
+  - group: variables-example-inside
 
-steps:
-  - script: |
-     echo outsidevar '$(outsidevar)'
-     echo defaultVar '$(defaultVar)'
-     echo var by tag '$(variable)'
+  steps:
+    - script: |
+        echo outsidevar '$(outsidevar)'
+        echo defaultVar '$(defaultVar)'
+        echo var by tag '$(variable)'
