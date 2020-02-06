@@ -23,17 +23,18 @@ resources:
       endpoint: enamba
 
 jobs:
+- template: build.example.yml@yml_reference
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/developer') }}: 
-  - template: arch_group_variables.example.yml@yml_reference
+  - template: deploy.example.yml@yml_reference
     parameters:
       GroupVariablesName: variables-example-developer
 
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/qa') }}: 
-  - template: arch_group_variables.example.yml@yml_reference
+  - template: deploy.example.yml@yml_reference
     parameters:
       GroupVariablesName: variables-example-qa
 
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/production') }}: 
-  - template: arch_group_variables.example.yml@yml_reference
+  - template: deploy.example.yml@yml_reference
     parameters:
       GroupVariablesName: variables-example-production
