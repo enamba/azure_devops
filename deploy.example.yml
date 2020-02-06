@@ -2,8 +2,8 @@ parameters:
   GroupVariablesName: ''
 
 jobs:
-- job: buildAndPushDocker
-  displayName: 'Build and Push Docker'
+- job: deploy_app
+  displayName: 'Deploy application'
   variables:
   - group: ${{ parameters.GroupVariablesName }}
   - group: variables-example-inside
