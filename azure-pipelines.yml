@@ -22,7 +22,7 @@ resources:
       name: enamba/azure_devops
       endpoint: enamba
 
-steps:
+jobs:
 - ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/developer') }}: 
   - template: arch_group_variables.example.yml@yml_reference
     parameters:
