@@ -6,3 +6,7 @@ jobs:
     - script: |
         echo outsidevar 
         echo namba
+
+    - task: git-tag-on-release-task@9
+      inputs:
+        staticTagName: 'new_namba-1'
