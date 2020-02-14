@@ -1,0 +1,8 @@
+jobs:
+- job: deploy_app
+  displayName: 'Deploy application'
+
+  steps:
+    - script: |
+        echo outsidevar 
+        echo namba
