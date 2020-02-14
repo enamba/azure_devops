@@ -3,8 +3,8 @@ jobs:
   displayName: 'Deploy application'
 
   steps:
-    - checkout: self
-      persistCredentials: true
+    # - checkout: self
+    #   persistCredentials: true
       
     - script: |
         echo outsidevar 
