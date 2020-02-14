@@ -3,6 +3,9 @@ jobs:
   displayName: 'Deploy application'
 
   steps:
+    - checkout: self
+      persistCredentials: true
+      
     - script: |
         echo outsidevar 
         echo namba
